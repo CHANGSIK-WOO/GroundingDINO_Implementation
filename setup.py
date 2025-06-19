@@ -25,28 +25,40 @@ import os
 import subprocess
 
 import subprocess
+# subprocess can execute external command in python code, and we want to execute pip install torch here.
 import sys
+#sys can get information about current python interpreter.
 
 def install_torch():
     try:
         import torch
     except ImportError:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "torch"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "torch"]) 
+        #sys.executable is execution file path using now.
+        #execute "pip install -m torch" using sys.executable like inputting in terminal.
+        
 
 # Call the function to ensure torch is installed
 install_torch()
 
 import torch
 from setuptools import find_packages, setup
+#setuptools.setup is used to set up the package, including its name, version, author, etc.
+#setuptools.setup makes package like .whl, .egg from name, version, packages, install_requires, ext_modules, etc.
+#setuptools.find_packages is used to find all packages in the current directory.
+#setuptools.find_packages find all packages from __init__.py files in the current directory and its subdirectories.
+
 from torch.utils.cpp_extension import CUDA_HOME, CppExtension, CUDAExtension
 
 # groundingdino version info
 version = "0.1.0"
 package_name = "groundingdino"
 cwd = os.path.dirname(os.path.abspath(__file__))
+# cwd = current working directory
+# __file__ is the path of the current file, and os.path.abspath(__file__) is the absolute path of the current file.
 
+sha = "Unknown" #SHA = Secure Hash Algorithm
 
-sha = "Unknown"
 try:
     sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=cwd).decode("ascii").strip()
 except Exception:
@@ -63,14 +75,19 @@ def write_version_file():
 requirements = ["torch", "torchvision"]
 
 torch_ver = [int(x) for x in torch.__version__.split(".")[:2]]
-
+# if torch.__version__ == "2.1.0" then torch_ver = [2, 1]
 
 def get_extensions():
+    """Get the extensions to build from C++ & CUDA source files to .so (can use in Python)."""
+
     this_dir = os.path.dirname(os.path.abspath(__file__))
     extensions_dir = os.path.join(this_dir, "groundingdino", "models", "GroundingDINO", "csrc")
 
     main_source = os.path.join(extensions_dir, "vision.cpp")
     sources = glob.glob(os.path.join(extensions_dir, "**", "*.cpp"))
+    # ** means to match any files and zero or more directories in the current directory and its subdirectories.
+    # * means to match any files in the current directory.
+    
     source_cuda = glob.glob(os.path.join(extensions_dir, "**", "*.cu")) + glob.glob(
         os.path.join(extensions_dir, "*.cu")
     )
